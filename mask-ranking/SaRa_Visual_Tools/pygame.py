@@ -52,11 +52,19 @@ def create_interactive_plot(input_image, mask_segments_min, heatmap):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                    pygame.display.quit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_h:  # Listen for the spacebar key press
                         show_heatmap = not show_heatmap  # Toggle the show_heatmap state
                     elif event.key == pygame.K_m:
                         show_masks = not show_masks
+                    elif event.key == pygame.K_q:
+                        running = False
+                        pygame.display.quit()
+                    elif event.key == pygame.K_ESCAPE:
+                        running = False
+                        pygame.display.quit()
+                    
 
             screen.fill((0, 0, 0))  # Fill the screen with black
 

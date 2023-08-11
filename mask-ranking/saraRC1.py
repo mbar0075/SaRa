@@ -225,6 +225,8 @@ def generate_heatmap(img, mode, sorted_seg_scores, segments_coords) -> tuple:
     mode: 0 for white grid, 1 for color-coded grid
     '''
 
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
     font = cv2.FONT_HERSHEY_SIMPLEX
     print_index = 0
     set_value = int(0.25 * len(sorted_seg_scores))
@@ -270,6 +272,8 @@ def generate_heatmap(img, mode, sorted_seg_scores, segments_coords) -> tuple:
         sara_tuple = (ent[0], ent[1], print_index, quartile)
         sara_list_out.append(sara_tuple)
         print_index += 1
+
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
     return img, sara_list_out
 
