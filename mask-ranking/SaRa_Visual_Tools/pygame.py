@@ -7,6 +7,10 @@ def create_interactive_plot(input_image, mask_segments_min, heatmap):
     try:
         pygame.init()
 
+        # Icon
+        icon = pygame.image.load('./output/heatmap.png')
+        pygame.display.set_icon(icon)
+
         WIDTH = 1280
         HEIGHT = 720
 
@@ -20,7 +24,9 @@ def create_interactive_plot(input_image, mask_segments_min, heatmap):
         screen_height = HEIGHT
 
         screen = pygame.display.set_mode((screen_width, screen_height))
-        pygame.display.set_caption("Saliency Ranking App")
+
+        # Window title
+        pygame.display.set_caption("SaRa Ranking")
 
         # main_image = pygame.image.load('./output/original.png').convert_alpha()
         main_image = pygame.surfarray.make_surface(original.swapaxes(0, 1))
@@ -138,7 +144,23 @@ def create_interactive_plot(input_image, mask_segments_min, heatmap):
                 screen.blit(iou_text, (mouse_x + inc, mouse_y - inc + title_text.get_height() + rank_text.get_height()))
                 screen.blit(entropy_text, (mouse_x + inc, mouse_y - inc + title_text.get_height() + rank_text.get_height() + iou_text.get_height()))
             
+            # Allow zooming
+            if pygame.mouse.get_pressed()[0]:
+                mouse_x, mouse_y = pygame.mouse.get_pos()
+
+                if mouse_x < screen_width and mouse_y < screen_height:
+                    zoom_rect = pygame.Rect(mouse_x - 50, mouse_y - 50, 100, 100)
+
+                    zoomed_image = pygame.Surface((100, 100))
+                    zoomed_image.blit(main_image, (0, 0), zoom_rect)
+
+                    zoomed_image = pygame.transform.scale(zoomed_image, (400, 400))
+
+                    screen.blit(zoomed_image, (0, 0))
+                    
             pygame.display.flip()  # Update the display
+
+            
 
     except SystemExit:
         print("Exiting...")
