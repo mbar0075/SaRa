@@ -7,6 +7,7 @@ import numpy as np
 import skimage.io
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import tensorflow as tf
 import keras
 import h5py
@@ -252,3 +253,46 @@ def get_mask_segments_info(image, sara_list, masks):
         ]
     
     return mask_info, mask_segments_min
+
+def get_colored_masks(image, masks, mask_segments_min):
+    # Generating random colors for each rank
+    num_ranks = len(mask_segments_min)
+    rank_colors = [np.random.randint(0, 256, size=(1, 3), dtype=np.uint8) for _ in range(num_ranks)]
+
+    # Ensuring that the colors are all unique
+    while len(rank_colors) != len(set([tuple(color[0]) for color in rank_colors])):
+        rank_colors = [np.random.randint(0, 256, size=(1, 3), dtype=np.uint8) for _ in range(num_ranks)]
+
+    # Converting the colors to RGBA format
+    rgba_colors = [(color[0][0] / 255, color[0][1] / 255, color[0][2] / 255, 1.0) for color in rank_colors]
+
+    # Creating legend items
+    legend_items = [Line2D([0], [0], marker='o', markerfacecolor=color, markersize=10, label=f"Rank: {rank}")
+                    for rank, color in zip(mask_segments_min.values(), rgba_colors)]
+
+    # Creating combined mask image
+    combined_mask_image = np.zeros_like(image)
+    for i, rank in enumerate(mask_segments_min):
+        mask = masks[rank]['mask']
+        # Creating a new image with the assigned color applied to white parts of the mask
+        masked_image = combined_mask_image.copy()
+        random_color = rank_colors[i]
+        masked_image[mask > 0] = random_color
+
+        # Combining the masked image with the original image
+        combined_mask_image = cv2.bitwise_or(combined_mask_image, masked_image)
+
+    # Displaying the resulting image with the legend
+    plt.figure(figsize=(8, 8))
+    plt.imshow(combined_mask_image)
+    plt.legend(handles=legend_items, loc='upper left')
+    plt.title("Color Ranked Masks")
+    plt.axis('off')
+    plt.show()
+
+    # Saving the rank colors in a dictionary based on ranks
+    rank_colors_dict = {}
+    for rank, color in zip(mask_segments_min.values(), rgba_colors):
+        rank_colors_dict[rank] = color
+
+    return combined_mask_image, rank_colors_dict
