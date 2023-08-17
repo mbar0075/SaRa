@@ -14,7 +14,10 @@ import pySaliencyMap
 
 
 # Global Variables
-segments_entropies = []
+WEIGHTS = (1, 1, 1)
+
+# segments_entropies = []
+segments_scores = []
 segments_coords = []
 
 seg_dim = 0
@@ -94,6 +97,24 @@ def calculate_pixel_frequency(img) -> dict:
     return pixels_frequency
 
 
+def calculate_score(H, ds, cb, w):
+    '''
+    Calculates the saliency score of an image img using the entropy H, depth score ds, centre-bias cb and weights w. It returns the saliency score.
+    '''
+
+    # Normalise H
+    # H = (H - 0) / (math.log(2, 256) - 0)
+
+    # H = wth root of H
+    H = H ** (1 / w[0])
+
+    ds = ds ** w[1]
+
+    cb = cb ** w[2]
+
+    return H + ds + cb
+
+
 def calculate_entropy(img, w, dw) -> float:
     '''
     Calculates the entropy of an image img using the given weights w and 
@@ -121,7 +142,7 @@ def calculate_entropy(img, w, dw) -> float:
         t_prob = (pixels_frequency.get(px)) / total_pixels
         entropy += entropy + (t_prob * math.log(2, (1 / t_prob)))
 
-    entropy = entropy * wt * dw
+    # entropy = entropy * wt * dw
 
     return entropy
 
@@ -133,20 +154,36 @@ def find_most_salient_segment(segments, kernel, dws):
     and the index of the most salient segment.
     '''
 
-    max_entropy = 0
+    # max_entropy = 0
+    max_score = 0
     index = 0
     i = 0
 
     for segment in segments:
         temp_entropy = calculate_entropy(segment, kernel[i], dws[i])
-        temp_tup = (i, temp_entropy)
-        segments_entropies.append(temp_tup)
-        if temp_entropy > max_entropy:
-            max_entropy = temp_entropy
+        # temp_tup = (i, temp_entropy)
+        # segments_entropies.append(temp_tup)
+
+        w = WEIGHTS
+        temp_score = calculate_score(temp_entropy, dws[i], kernel[i], w)
+
+        temp_tup = (i, temp_score, temp_entropy, kernel[i], dws[i])
+
+        # segments_scores.append((i, temp_score))
+        segments_scores.append(temp_tup)
+
+        # if temp_entropy > max_entropy:
+        #     max_entropy = temp_entropy
+        #     index = i
+
+        if temp_score > max_score:
+            max_score = temp_score
             index = i
+
         i += 1
 
-    return max_entropy, index
+    # return max_entropy, index
+    return max_score, index
 
 
 def make_gaussian(size, fwhm=10, center=None):
@@ -226,51 +263,87 @@ def generate_heatmap(img, mode, sorted_seg_scores, segments_coords) -> tuple:
     '''
 
     font = cv2.FONT_HERSHEY_SIMPLEX
-    print_index = 0
+    # print_index = 0
+    print_index = len(sorted_seg_scores) - 1
     set_value = int(0.25 * len(sorted_seg_scores))
     color = (0, 0, 0)
 
+    max_x = 0
+    max_y = 0
+
+    overlay = np.zeros_like(img, dtype=np.uint8)
+    text_overlay = np.zeros_like(img, dtype=np.uint8)
+
     sara_list_out = []
 
-    for ent in sorted_seg_scores:
+    for ent in reversed(sorted_seg_scores):
         quartile = 0
         if mode == 0:
             color = (255, 255, 255)
             t = 4
         elif mode == 1:
             if print_index + 1 <= set_value:
-                color = (0, 0, 255)
-                t = 8
-                quartile = 4
-            elif print_index + 1 <= set_value * 2:
-                color = (0, 128, 255)
-                t = 6
-                quartile = 3
-            elif print_index + 1 <= set_value * 3:
-                color = (0, 255, 255)
-                t = 4
-                quartile = 2
-            elif print_index + 1 <= set_value * 4:
-                color = (0, 250, 0)
+                color = (0, 0, 255, 255)
                 t = 2
                 quartile = 1
+            elif print_index + 1 <= set_value * 2:
+                color = (0, 128, 255, 192)
+                t = 4
+                quartile = 2
+            elif print_index + 1 <= set_value * 3:
+                color = (0, 255, 255, 128)
+                t = 4
+                t = 6
+                quartile = 3
+            elif print_index + 1 <= set_value * 4:
+                color = (0, 250, 0, 64)
+                t = 8
+                quartile = 4
 
         x1 = segments_coords[ent[0]][1]
         y1 = segments_coords[ent[0]][2]
         x2 = segments_coords[ent[0]][3]
         y2 = segments_coords[ent[0]][4]
+
+        if x2 > max_x:
+            max_x = x2
+        if y2 > max_y:
+            max_y = y2
+
         x = int((x1 + x2) / 2)
         y = int((y1 + y2) / 2)
 
-        cv2.putText(img, str(print_index), (x - 2, y),
-                    font, .5, color, 1, cv2.LINE_AA)
-        cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
 
-        # Rank, entropy, index, quartile
-        sara_tuple = (ent[0], ent[1], print_index, quartile)
+
+        # fill rectangle
+        cv2.rectangle(overlay, (x1, y1), (x2, y2), color, -1)
+
+        cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 0, 0), 1)
+        # put text in the middle of the rectangle
+        
+        # white text
+        cv2.putText(text_overlay, str(print_index), (x - 5, y),
+                    font, .4, (255, 255, 255), 1, cv2.LINE_AA)
+        
+
+
+        # Rank, score, entropy, centre-bias, depth, index, quartile
+        # print(ent)
+        sara_tuple = (ent[0], ent[1], ent[2], ent[3], ent[4], print_index, quartile)
         sara_list_out.append(sara_tuple)
-        print_index += 1
+        print_index -= 1
 
+    # crop the overlay to up to x2 and y2
+    overlay = overlay[0:max_y, 0:max_x]
+    text_overlay = text_overlay[0:max_y, 0:max_x]
+    img = img[0:max_y, 0:max_x]
+
+    
+    img = cv2.addWeighted(overlay, 0.3, img, 0.7, 0, img)
+
+    img[text_overlay > 128] = text_overlay[text_overlay > 128]
+
+    
     return img, sara_list_out
 
 
@@ -288,12 +361,32 @@ def generate_sara(tex, tex_segments):
     dws = gen_blank_depth_weight(tex_segments)
 
     max_h, index = find_most_salient_segment(tex_segments, gaussian1d, dws)
-    dict_entropies = dict(segments_entropies)
-    sorted_entropies = sorted(dict_entropies.items(),
-                              key=operator.itemgetter(1), reverse=True)
+    # dict_entropies = dict(segments_entropies)
+    # segments_scores list with 5 elements, use index as key for dict and store rest as list of index
+    dict_scores = {}
+
+    for segment in segments_scores:
+        dict_scores[segment[0]] = [segment[1], segment[2], segment[3], segment[4]]
+
+    # sorted_entropies = sorted(dict_entropies.items(),
+    #                           key=operator.itemgetter(1), reverse=True)
+                              
+
+    # sorted_scores = sorted(dict_scores.items(),
+    #                           key=operator.itemgetter(1), reverse=True)
+
+    # Sort by first value in value list
+    sorted_scores = sorted(dict_scores.items(), key=lambda x: x[1][0], reverse=True)
+    
+    # flatten
+    sorted_scores = [[i[0], i[1][0], i[1][1], i[1][2], i[1][3]] for i in sorted_scores]
+
+    # tex_out, sara_list_out = generate_heatmap(
+    #     tex, 1, sorted_entropies, segments_coords)
 
     tex_out, sara_list_out = generate_heatmap(
-        tex, 1, sorted_entropies, segments_coords)
+        tex, 1, sorted_scores, segments_coords)
+    
     return tex_out, sara_list_out
 
 
@@ -333,9 +426,12 @@ def reset():
     Resets all global variables to their default values.
     '''
 
-    global segments_entropies, segments_coords, seg_dim, segments, gt_segments, dws, sara_list
+    # global segments_entropies, segments_scores, segments_coords, seg_dim, segments, gt_segments, dws, sara_list
 
-    segments_entropies = []
+    global segments_scores, segments_coords, seg_dim, segments, gt_segments, dws, sara_list
+
+    # segments_entropies = []
+    segments_scores = []
     segments_coords = []
 
     seg_dim = 0
