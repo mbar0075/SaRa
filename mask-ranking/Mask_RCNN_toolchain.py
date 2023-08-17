@@ -169,7 +169,7 @@ def get_mask_segments(image, sara_list, masks):
 
     for segment in sara_list:
         # Convert index to coordinates, extract segment from heatmap
-        x1, y1, x2, y2 = index_to_coordinates(segment[2], SEG_DIM, image.shape)
+        x1, y1, x2, y2 = index_to_coordinates(segment[5], SEG_DIM, image.shape)
 
         for m in masks:
             if m not in mask_segments:
@@ -206,7 +206,7 @@ def get_mask_segments_info(image, sara_list, masks):
 
     for segment in sara_list:
         # Convert index to coordinates, extract segment from heatmap
-        x1, y1, x2, y2 = index_to_coordinates(segment[2], SEG_DIM, image.shape)
+        x1, y1, x2, y2 = index_to_coordinates(segment[5], SEG_DIM, image.shape)
 
         for m in masks:
             if m not in mask_info:
