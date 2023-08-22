@@ -115,6 +115,9 @@ def return_saliency(img, generator='itti'):
 
         saliency_map = cv2.resize(log_density_prediction.detach().cpu().numpy()[0, 0], (img_width, img_height))
 
+    # Normalize saliency map
+    saliency_map = cv2.normalize(saliency_map, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
+
     return saliency_map
 
 
@@ -192,8 +195,8 @@ def calculate_entropy(img, w, dw) -> float:
     total_pixels = sum(pixels_frequency.values())
 
     for px in pixels_frequency:
-        t_prob = (pixels_frequency.get(px)) / total_pixels
-        entropy += entropy + (t_prob * math.log(2, (1 / t_prob)))
+        t_prob = pixels_frequency[px] / total_pixels
+        entropy += entropy + (t_prob * math.log((1 / t_prob), 2))
 
     # entropy = entropy * wt * dw
 
@@ -381,7 +384,6 @@ def generate_heatmap(img, mode, sorted_seg_scores, segments_coords) -> tuple:
 
 
         # Rank, score, entropy, centre-bias, depth, index, quartile
-        # print(ent)
         sara_tuple = (ent[0], ent[1], ent[2], ent[3], ent[4], print_index, quartile)
         sara_list_out.append(sara_tuple)
         print_index -= 1
@@ -454,6 +456,7 @@ def return_sara(input_img, grid, generator='itti'):
     seg_dim = grid
 
     tex_segments = generate_segments(return_saliency(input_img, generator), seg_dim)
+    # tex_segments = generate_segments(input_img, seg_dim)
     sara_output, sara_list_output = generate_sara(input_img, tex_segments)
 
     return sara_output, sara_list_output
