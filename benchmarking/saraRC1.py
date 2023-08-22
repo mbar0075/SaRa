@@ -443,7 +443,7 @@ def generate_sara(tex, tex_segments):
     return tex_out, sara_list_out
 
 
-def return_sara(input_img, grid):
+def return_sara(input_img, grid, generator='itti'):
     '''
     Computes the SaRa output for the given input image. It uses the 
     generate_sara function internally. It returns the SaRa output image and 
@@ -453,7 +453,7 @@ def return_sara(input_img, grid):
     global seg_dim
     seg_dim = grid
 
-    tex_segments = generate_segments(return_itti_saliency(input_img), seg_dim)
+    tex_segments = generate_segments(return_saliency(input_img, generator), seg_dim)
     sara_output, sara_list_output = generate_sara(input_img, tex_segments)
 
     return sara_output, sara_list_output
