@@ -32,14 +32,14 @@ class Solver(object):
             self.device = torch.device('cuda:0')
         self.build_model()
         if self.config.pre_trained:
-            best_model=torch.load(self.config.pre_trained)
+            best_model = torch.load(self.config.model, map_location=torch.device('cpu'))
             new_state_dict = self.check_keys(best_model=best_model)
             self.net.load_state_dict(new_state_dict)
             print('Successfully load the the model from: ' + self.config.pre_trained)
         if config.mode == 'train':
             self.log_output = open("%s/logs/log.txt" % config.save_fold, 'w')
         else:
-            best_model=torch.load(self.config.model)
+            best_model = torch.load(self.config.model, map_location=torch.device('cpu'))
             new_state_dict=self.check_keys(best_model=best_model)
             self.net.load_state_dict(new_state_dict)
             print('Successfully load the the model from: ' + self.config.model)

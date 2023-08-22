@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('--n_color', type=int, default=3)
     parser.add_argument('--lr', type=float, default=3e-3)
     parser.add_argument('--clip_gradient', type=float, default=1.0)
-    parser.add_argument('--cuda', type=bool, default=True)
+    parser.add_argument('--cuda', type=bool, default=False)
 
     # Training settings
     parser.add_argument('--multi_gpu', type=bool, default=True)
