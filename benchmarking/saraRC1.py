@@ -115,6 +115,40 @@ def return_saliency(img, generator='itti'):
 
         saliency_map = cv2.resize(log_density_prediction.detach().cpu().numpy()[0, 0], (img_width, img_height))
 
+    elif generator == 'fpn':
+        # Add ./fpn to the system path
+        import sys
+        sys.path.append('./fpn')
+        import inference as inf
+
+        results_dict = {}
+        rt_args = inf.parse_arguments()
+        
+        # Call the run_inference function and capture the results
+        pred_masks_raw_list, pred_masks_round_list = inf.run_inference(rt_args)
+        
+        # Store the results in the dictionary
+        results_dict['pred_masks_raw'] = pred_masks_raw_list
+        results_dict['pred_masks_round'] = pred_masks_round_list
+
+        saliency_map = results_dict['pred_masks_raw']
+
+        if img_width > img_height:
+            print(img_width, img_height)
+            saliency_map = cv2.resize(saliency_map, (img_width, img_width))
+
+            diff = (img_width - img_height) // 2
+
+            saliency_map = saliency_map[diff:img_width - diff, 0:img_width]
+        else:
+            print(img_width, img_height)
+            saliency_map = cv2.resize(saliency_map, (img_height, img_height))
+
+            diff = (img_height - img_width) // 2
+
+            saliency_map = saliency_map[0:img_height, diff:img_height - diff]
+
+
     # Normalize saliency map
     saliency_map = cv2.normalize(saliency_map, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
 
