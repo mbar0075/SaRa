@@ -188,22 +188,26 @@ class InfDataloader(Dataset):
     """
     Dataloader for Inference.
     """
-    def __init__(self, img_folder, target_size=256):
-        self.imgs_folder = img_folder
-        self.img_paths = sorted(glob.glob(self.imgs_folder + '/*'))
+    # def __init__(self, img_folder, target_size=256):
+    def __init__(self, img, target_size=256):
+        # self.imgs_folder = img_folder
+        self.img = img
+        # self.img_paths = sorted(glob.glob(self.imgs_folder + '/*'))
 
         self.target_size = target_size
         self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                               std=[0.229, 0.224, 0.225])
 
-    def __getitem__(self, idx):
+    # def __getitem__(self, idx):
+    def __getitem__(self):
         """
         __getitem__ for inference
         :param idx: Index of the image
         :return: img_np is a numpy RGB-image of shape H x W x C with pixel values in range 0-255.
         And img_tor is a torch tensor, RGB, C x H x W in shape and normalized.
         """
-        img = cv2.imread(self.img_paths[idx])
+        # img = cv2.imread(self.img_paths[idx])
+        img = cv2.imread(self.img)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # Pad images to target size
@@ -217,7 +221,8 @@ class InfDataloader(Dataset):
         return img_np, img_tor
 
     def __len__(self):
-        return len(self.img_paths)
+        # return len(self.img_paths)
+        return 1
 
 
 if __name__ == '__main__':

@@ -122,7 +122,7 @@ def return_saliency(img, generator='itti'):
         import inference as inf
 
         results_dict = {}
-        rt_args = inf.parse_arguments()
+        rt_args = inf.parse_arguments(img)
         
         # Call the run_inference function and capture the results
         pred_masks_raw_list, pred_masks_round_list = inf.run_inference(rt_args)
@@ -134,19 +134,28 @@ def return_saliency(img, generator='itti'):
         saliency_map = results_dict['pred_masks_raw']
 
         if img_width > img_height:
-            print(img_width, img_height)
             saliency_map = cv2.resize(saliency_map, (img_width, img_width))
 
             diff = (img_width - img_height) // 2
 
             saliency_map = saliency_map[diff:img_width - diff, 0:img_width]
         else:
-            print(img_width, img_height)
             saliency_map = cv2.resize(saliency_map, (img_height, img_height))
 
             diff = (img_height - img_width) // 2
 
             saliency_map = saliency_map[0:img_height, diff:img_height - diff]
+
+    elif generator == 'msinet':
+        import sys
+        sys.path.append('./msi-net')
+
+        import main as msi
+
+        # Load the model
+        msi_net = msi.MSINet()
+
+
 
 
     # Normalize saliency map
