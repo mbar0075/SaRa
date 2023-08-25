@@ -146,17 +146,12 @@ def return_saliency(img, generator='itti'):
 
             saliency_map = saliency_map[0:img_height, diff:img_height - diff]
 
-    elif generator == 'msinet':
-        import sys
-        sys.path.append('./msi-net')
+    elif generator == 'emlnet':
+        from emlnet.eval_combined import main as eval_combined
+        saliency_map = eval_combined(img)
 
-        import main as msi
-
-        # Load the model
-        msi_net = msi.MSINet()
-
-
-
+        # Resize to image size
+        saliency_map = cv2.resize(saliency_map, (img_width, img_height))
 
     # Normalize saliency map
     saliency_map = cv2.normalize(saliency_map, None, 255, 0, cv2.NORM_MINMAX, cv2.CV_8UC1)
@@ -488,7 +483,7 @@ def generate_sara(tex, tex_segments):
     return tex_out, sara_list_out
 
 
-def return_sara(input_img, grid, generator='itti'):
+def return_sara(input_img, grid, generator='itti', saliency_map=None):
     '''
     Computes the SaRa output for the given input image. It uses the 
     generate_sara function internally. It returns the SaRa output image and 
@@ -498,7 +493,11 @@ def return_sara(input_img, grid, generator='itti'):
     global seg_dim
     seg_dim = grid
 
-    tex_segments = generate_segments(return_saliency(input_img, generator), seg_dim)
+    if saliency_map is None:
+        tex_segments = generate_segments(return_saliency(input_img, generator), seg_dim)
+    else:
+        tex_segments = generate_segments(saliency_map, seg_dim)
+
     # tex_segments = generate_segments(input_img, seg_dim)
     sara_output, sara_list_output = generate_sara(input_img, tex_segments)
 
