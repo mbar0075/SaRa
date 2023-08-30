@@ -190,7 +190,9 @@ def resnet50(model_path, **kwargs):
     else:
         model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
         model_state = model.state_dict()
-        loaded_model = torch.load(model_path)
+
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        loaded_model = torch.load(model_path, map_location=device)
         if "state_dict" in loaded_model:
             loaded_model = loaded_model['state_dict']
         pretrained = {k[7:]:v for k, v in loaded_model.items() if k[7:] in model_state}

@@ -58,7 +58,8 @@ class Decoder(nn.Module):
 def build_decoder(model_path=None, *args):
     decoder = Decoder(*args)
     if not model_path is None:
-        loaded = torch.load(model_path)['state_dict']
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        loaded = torch.load(model_path, map_location=device)['state_dict']
         decoder.load_state_dict(loaded)
         print ("Loaded decoder", model_path)
     return decoder
