@@ -65,7 +65,7 @@ def generate_segments(img, seg_count) -> list:
     return segments
 
 
-def return_saliency(img, generator='itti'):
+def return_saliency(img, generator='itti', deepgaze_model=None, emlnet_models=None):
     '''
     Takes an image img as input and calculates the saliency map using the 
     Itti's Saliency Map Generator. It returns the saliency map.
@@ -90,11 +90,12 @@ def return_saliency(img, generator='itti'):
 
         import deepgaze_pytorch
 
-        # DEVICE = 'cuda'
-        DEVICE = 'cpu'
+        DEVICE = 'cuda'
+        # DEVICE = 'cpu'
 
         # you can use DeepGazeI or DeepGazeIIE
-        model = deepgaze_pytorch.DeepGazeIIE(pretrained=True).to(DEVICE)
+        # model = deepgaze_pytorch.DeepGazeIIE(pretrained=True).to(DEVICE)
+        model = deepgaze_model
 
         # image = face()
         image = img
@@ -149,7 +150,7 @@ def return_saliency(img, generator='itti'):
 
     elif generator == 'emlnet':
         from emlnet.eval_combined import main as eval_combined
-        saliency_map = eval_combined(img)
+        saliency_map = eval_combined(img, emlnet_models)
 
         # Resize to image size
         saliency_map = cv2.resize(saliency_map, (img_width, img_height))
