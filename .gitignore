@@ -2,3 +2,4 @@
 *.json
 Siris_et_al
 *.pth
+benchmarking/results/
