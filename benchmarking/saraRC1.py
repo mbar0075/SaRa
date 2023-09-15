@@ -90,9 +90,6 @@ def return_saliency(img, generator='itti', deepgaze_model=None, emlnet_models=No
 
         import deepgaze_pytorch
 
-        DEVICE = 'cuda'
-        # DEVICE = 'cpu'
-
         # you can use DeepGazeI or DeepGazeIIE
         # model = deepgaze_pytorch.DeepGazeIIE(pretrained=True).to(DEVICE)
 
