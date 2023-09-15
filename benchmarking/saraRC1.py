@@ -95,7 +95,11 @@ def return_saliency(img, generator='itti', deepgaze_model=None, emlnet_models=No
 
         # you can use DeepGazeI or DeepGazeIIE
         # model = deepgaze_pytorch.DeepGazeIIE(pretrained=True).to(DEVICE)
-        model = deepgaze_model
+
+        if deepgaze_model is None:
+            model = deepgaze_pytorch.DeepGazeIIE(pretrained=True).to(DEVICE)
+        else:
+            model = deepgaze_model
 
         # image = face()
         image = img
