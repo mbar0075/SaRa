@@ -65,7 +65,7 @@ def generate_segments(img, seg_count) -> list:
     return segments
 
 
-def return_saliency(img, generator='itti', deepgaze_model=None, emlnet_models=None):
+def return_saliency(img, generator='itti', deepgaze_model=None, emlnet_models=None, DEVICE='cpu'):
     '''
     Takes an image img as input and calculates the saliency map using the 
     Itti's Saliency Map Generator. It returns the saliency map.
