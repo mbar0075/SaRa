@@ -1,6 +1,6 @@
 **<h1>SaRa</h1>**
 <!-- Describe the software -->
-**SaRa** (Saliency-Driven Object Ranking) is a a saliency-driven ranking model that does not require any training and can efficiently rank the visual saliency of an image.
+**SaRa** (Saliency-Driven Object Ranking) is a saliency-driven ranking model that does not require any training and can efficiently rank the visual saliency of an image.
 
 This technique can work with or without depth information. 
 
