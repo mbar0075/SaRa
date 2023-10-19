@@ -392,10 +392,15 @@ def generate_heatmap(img, mode, sorted_seg_scores, segments_coords) -> tuple:
                 t = 4
                 t = 6
                 quartile = 3
-            elif print_index + 1 <= set_value * 4:
+            # elif print_index + 1 <= set_value * 4:
+            #     color = (0, 250, 0, 64)
+            #     t = 8
+            #     quartile = 4
+            else:
                 color = (0, 250, 0, 64)
                 t = 8
                 quartile = 4
+
 
         x1 = segments_coords[ent[0]][1]
         y1 = segments_coords[ent[0]][2]
